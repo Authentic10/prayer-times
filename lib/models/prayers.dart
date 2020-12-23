@@ -1,9 +1,3 @@
-//List<Prayer> prayersFromJson(String str) =>
-//List<Prayer>.from(json.decode(str).map((x) => Prayer.fromJSON(x)));
-
-//String prayerToJson(List<Prayer> data) =>
-//json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
-
 class Prayer {
   final String fajr;
   final String dhuhr;

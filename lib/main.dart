@@ -159,46 +159,47 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _showCurrentPrayer() {
     return Center(
         child: new GestureDetector(
-      onTap: () {
-        _prayersList(); //Show all the prayers
-      },
-      child: FutureBuilder<Prayer>(
-        future: getPrayers(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            getHour(snapshot.data.fajr, snapshot.data.dhuhr, snapshot.data.asr,
-                snapshot.data.maghrib, snapshot.data.isha);
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    current,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Candara',
-                      fontSize: 50,
-                    ),
+          onTap: () {
+            _prayersList(); //Show all the prayers
+          },
+          child: FutureBuilder<Prayer>(
+            future: getPrayers(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                getHour(snapshot.data.fajr, snapshot.data.dhuhr, snapshot.data.asr,
+                    snapshot.data.maghrib, snapshot.data.isha);
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        current,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Candara',
+                          fontSize: 50,
+                        ),
+                      ),
+                      Text(
+                        currentHour,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: 'Candara',
+                          fontSize: 30,
+                        ),
+                      )
+                    ],
                   ),
-                  Text(
-                    currentHour,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontFamily: 'Candara',
-                      fontSize: 30,
-                    ),
-                  )
-                ],
-              ),
-            );
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
-          }
-          return CircularProgressIndicator();
-        },
-      ),
-    ));
+                );
+              } else if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              }
+              return CircularProgressIndicator();
+            },
+          ),
+        )
+      );
   }
 
   //Check the actual time and return the current prayer
@@ -206,13 +207,12 @@ class _MyHomePageState extends State<MyHomePage> {
       String fajr, String dohr, String asr, String maghrib, String isha) {
     DateTime now = new DateTime.now();
 
-    int fa = int.parse(fajr.substring(0, 2));
     int doh = int.parse(dohr.substring(0, 2));
     int ash = int.parse(asr.substring(0, 2));
     int ma = int.parse(maghrib.substring(0, 2));
     int ish = int.parse(isha.substring(0, 2));
 
-    if (now.hour <= fa && now.hour < doh) {
+    if (now.hour < doh) {
       this.current = 'Fajr';
       this.currentHour = fajr;
     } else if (now.hour >= doh && now.hour < ash) {
@@ -244,4 +244,5 @@ Future<Prayer> getPrayers() async {
   } else {
     throw Exception("Can't get data.");
   }
+  
 }
