@@ -212,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
     int ma = int.parse(maghrib.substring(0, 2));
     int ish = int.parse(isha.substring(0, 2));
 
-    if (now.hour >= fa && now.hour < doh) {
+    if (now.hour <= fa && now.hour < doh) {
       this.current = 'Fajr';
       this.currentHour = fajr;
     } else if (now.hour >= doh && now.hour < ash) {
