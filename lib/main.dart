@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:prayer_times/views/prayers.dart';
+import 'package:prayer_times/views/settings.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'models/prayers.dart';
@@ -15,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Time To Pray',
       theme: ThemeData(
-        primaryColor: Colors.white,
+        primaryColor: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(title: 'Time To Pray'),
@@ -33,8 +35,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
   String current = '';
   String currentHour = '';
+  String city = 'Paris';
+
+  final myController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -42,164 +48,62 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
-          IconButton(icon: Icon(Icons.settings), onPressed: _setting),
+          IconButton(icon: Icon(Icons.settings), onPressed: (){
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => new Settings(city: this.city)));
+          }),
         ],
       ),
       body: _showCurrentPrayer(),
     );
   }
 
-  void _setting() {
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Settings'),
-        ),
-        body: ListView(children: <Widget>[
-          ListTile(
-            leading: Icon(Icons.location_city),
-            title: Text(
-              'Paris',
-              style: TextStyle(
-                fontFamily: 'Candara',
-                fontSize: 17,
-              ),
-            ),
-            trailing: Icon(Icons.edit),
-          )
-        ]),
-      );
-    }));
-  }
-
-  void _prayersList() {
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Prayers'),
-        ),
-        body: Center(
-          child: FutureBuilder<Prayer>(
-            future: getPrayers(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return ListView(
-                  children: <Widget>[
-                    ListTile(
-                      title: Text(
-                        "Fajr",
-                        style: TextStyle(
-                          fontFamily: 'Candara',
-                          fontSize: 17,
-                        ),
-                      ),
-                      subtitle: Text(snapshot.data.fajr),
-                      trailing: Icon(Icons.alarm),
-                    ),
-                    ListTile(
-                      title: Text(
-                        "Dhuhr",
-                        style: TextStyle(
-                          fontFamily: 'Candara',
-                          fontSize: 17,
-                        ),
-                      ),
-                      subtitle: Text(snapshot.data.dhuhr),
-                      trailing: Icon(Icons.alarm),
-                    ),
-                    ListTile(
-                      title: Text(
-                        "Asr",
-                        style: TextStyle(
-                          fontFamily: 'Candara',
-                          fontSize: 17,
-                        ),
-                      ),
-                      subtitle: Text(snapshot.data.asr),
-                      trailing: Icon(Icons.alarm),
-                    ),
-                    ListTile(
-                      title: Text(
-                        "Maghrib",
-                        style: TextStyle(
-                          fontFamily: 'Candara',
-                          fontSize: 17,
-                        ),
-                      ),
-                      subtitle: Text(snapshot.data.maghrib),
-                      trailing: Icon(Icons.alarm),
-                    ),
-                    ListTile(
-                      title: Text(
-                        "Isha",
-                        style: TextStyle(
-                          fontFamily: 'Candara',
-                          fontSize: 17,
-                        ),
-                      ),
-                      subtitle: Text(snapshot.data.isha),
-                      trailing: Icon(Icons.alarm),
-                    ),
-                  ],
-                );
-              } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
-              return CircularProgressIndicator();
-            },
-          ),
-        ),
-      );
-    }));
-  }
-
   //Get the current prayer
   Widget _showCurrentPrayer() {
     return Center(
         child: new GestureDetector(
-          onTap: () {
-            _prayersList(); //Show all the prayers
-          },
-          child: FutureBuilder<Prayer>(
-            future: getPrayers(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                getHour(snapshot.data.fajr, snapshot.data.dhuhr, snapshot.data.asr,
-                    snapshot.data.maghrib, snapshot.data.isha);
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        current,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Candara',
-                          fontSize: 50,
-                        ),
-                      ),
-                      Text(
-                        currentHour,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: 'Candara',
-                          fontSize: 30,
-                        ),
-                      )
-                    ],
+      onTap: () {
+        Navigator.push(context,
+            new MaterialPageRoute(builder: (context) => new PrayersList(prayers: getPrayers())));
+      },
+      child: FutureBuilder<Prayer>(
+        future: getPrayers(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            getHour(snapshot.data.fajr, snapshot.data.dhuhr, snapshot.data.asr,
+                snapshot.data.maghrib, snapshot.data.isha);
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    current,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Candara',
+                      fontSize: 50,
+                    ),
                   ),
-                );
-              } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
-              return CircularProgressIndicator();
-            },
-          ),
-        )
-      );
+                  Text(
+                    currentHour,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontFamily: 'Candara',
+                      fontSize: 30,
+                    ),
+                  )
+                ],
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Text("${snapshot.error}");
+          }
+          return CircularProgressIndicator();
+        },
+      ),
+    ));
   }
 
   //Check the actual time and return the current prayer
@@ -231,18 +135,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return '';
   }
-}
 
-//Get prayers from API
-Future<Prayer> getPrayers() async {
-  final String url = 'https://api.pray.zone/v2/times/today.json?city=blois';
+  //Get prayers from API
+  Future<Prayer> getPrayers() async {
+    final String url = 'https://api.pray.zone/v2/times/today.json?city=' + city;
 
-  final response = await http.get(url, headers: {"Accept": "application/json"});
+    final response =
+        await http.get(url, headers: {"Accept": "application/json"});
 
-  if (response.statusCode == 200) {
-    return Prayer.fromJSON(json.decode(response.body));
-  } else {
-    throw Exception("Can't get data.");
+    if (response.statusCode == 200) {
+      return Prayer.fromJSON(json.decode(response.body));
+    } else {
+      throw Exception("Can't get data.");
+    }
   }
-  
+
 }
