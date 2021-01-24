@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:prayer_times/views/prayers.dart';
 import 'package:prayer_times/views/settings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'models/prayers.dart';
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Time To Pray'),
+      home: MyHomePage(title: 'Prayer Times'),
     );
   }
 }
@@ -38,21 +39,34 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String current = '';
   String currentHour = '';
-  String city = 'Paris';
+  String city = 'Blois';
 
   final myController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _loadCity();
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
-          IconButton(icon: Icon(Icons.settings), onPressed: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => new Settings(city: this.city)));
-          }),
+          IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => new Settings(city: this.city)),
+                ).then((value) => setState(() {
+                      _loadCity();
+                    }));
+              }),
         ],
       ),
       body: _showCurrentPrayer(),
@@ -64,8 +78,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return Center(
         child: new GestureDetector(
       onTap: () {
-        Navigator.push(context,
-            new MaterialPageRoute(builder: (context) => new PrayersList(prayers: getPrayers())));
+        Navigator.push(
+            context,
+            new MaterialPageRoute(
+                builder: (context) => new PrayersList(prayers: getPrayers())));
       },
       child: FutureBuilder<Prayer>(
         future: getPrayers(),
@@ -150,4 +166,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  _loadCity() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      city = prefs.getString('city') ?? "Blois";
+    });
+  }
 }

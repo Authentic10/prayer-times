@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'city.dart';
 
 class Settings extends StatelessWidget {
@@ -17,7 +16,7 @@ class Settings extends StatelessWidget {
   }
 
   Widget _setting(BuildContext context, String c) {
-    String city = this.city;
+    String city = c;
     return ListView(children: <Widget>[
       ListTile(
         leading: Icon(Icons.location_city),
@@ -35,9 +34,9 @@ class Settings extends StatelessWidget {
               MaterialPageRoute(
                   builder: (context) => new City(city: this.city)));
           city = "$result".toString();
+          if (city != this.city) Navigator.pop(context);
         },
       )
     ]);
   }
-
 }

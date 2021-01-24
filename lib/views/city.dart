@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
 
 class City extends StatelessWidget {
@@ -9,6 +10,11 @@ class City extends StatelessWidget {
   final String city;
 
   City({Key key, @required this.city}) : super(key: key);
+
+  /*@override
+  void initState() {
+    _loadCity();
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +69,6 @@ class City extends StatelessWidget {
   }
 
   void _checkCity(BuildContext context, String c) async {
- 
     final String url = 'https://api.pray.zone/v2/times/today.json?city=' + c;
 
     final response =
@@ -71,10 +76,16 @@ class City extends StatelessWidget {
 
     if (response.statusCode == 200) {
       showToast("City changed !", context, gravity: Toast.BOTTOM);
+      _updateCity(c);
       Navigator.pop(context, c);
     } else {
       showToast("City not found, sorry !", context, gravity: Toast.BOTTOM);
     }
+  }
+
+  _updateCity(String c) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('city', c);
   }
 
   void showToast(String msg, BuildContext context,
