@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:prayer_times/views/city.dart';
 import 'package:prayer_times/views/prayers.dart';
 import 'package:prayer_times/views/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Time To Pray',
+      title: 'Prayer Times',
       theme: ThemeData(
         primaryColor: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -36,10 +37,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   String current = '';
   String currentHour = '';
-  String city = 'Blois';
+  String city = '';
 
   final myController = TextEditingController();
 
@@ -51,7 +51,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -169,7 +168,14 @@ class _MyHomePageState extends State<MyHomePage> {
   _loadCity() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      city = prefs.getString('city') ?? "Blois";
+      city = prefs.getString('city') ?? "none";
     });
+
+    if (city == 'none') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => new City(city: this.city)),
+      );
+    }
   }
 }

@@ -26,7 +26,8 @@ class City extends StatelessWidget {
   }
 
   Widget _changeCity(BuildContext context, String city) {
-    myController.text = city;
+    
+    if(city!='none') myController.text = city;
 
     return new Form(
       key: _formKey,
@@ -76,7 +77,7 @@ class City extends StatelessWidget {
 
     if (response.statusCode == 200) {
       showToast("City changed !", context, gravity: Toast.BOTTOM);
-      _updateCity(c);
+      await _updateCity(c);
       Navigator.pop(context, c);
     } else {
       showToast("City not found, sorry !", context, gravity: Toast.BOTTOM);
