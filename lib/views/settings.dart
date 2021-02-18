@@ -3,8 +3,9 @@ import 'city.dart';
 
 class Settings extends StatelessWidget {
   final String city;
+  final String connectionStatus;
 
-  Settings({Key key, @required this.city}) : super(key: key);
+  Settings({Key key, @required this.city, @required this.connectionStatus}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,12 @@ class Settings extends StatelessWidget {
   }
 
   Widget _setting(BuildContext context, String c) {
-    String city = c;
+    String city = '';
+    
+    if(c != 'none'){
+      city = c;
+    }
+    
     return ListView(children: <Widget>[
       ListTile(
         leading: Icon(Icons.location_city),
@@ -32,7 +38,7 @@ class Settings extends StatelessWidget {
           var result = await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => new City(city: this.city)));
+                  builder: (context) => new City(city: this.city, connectionStatus: this.connectionStatus)));
           city = "$result".toString();
           if (city != this.city) Navigator.pop(context);
         },

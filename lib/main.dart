@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:prayer_times/views/city.dart';
 import 'package:prayer_times/views/prayers.dart';
@@ -7,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'models/prayers.dart';
+import 'package:connectivity/connectivity.dart';
 
 void main() {
   runApp(MyApp());
@@ -37,6 +39,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String _connectionStatus = 'Unknown';
+  final Connectivity _connectivity = Connectivity();
+  StreamSubscription<ConnectivityResult> _connectivitySubscription;
+
   String current = '';
   String currentHour = '';
   String city = '';
@@ -47,6 +53,15 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _loadCity();
+    initConnectivity();
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -61,7 +76,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => new Settings(city: this.city)),
+                      builder: (context) => new Settings(
+                          city: this.city,
+                          connectionStatus: _connectionStatus)),
                 ).then((value) => setState(() {
                       _loadCity();
                     }));
@@ -155,17 +172,26 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<Prayer> getPrayers() async {
     final String url = 'https://api.pray.zone/v2/times/today.json?city=' + city;
 
-    final response =
-        await http.get(url, headers: {"Accept": "application/json"});
+    if (city != 'none') {
+      if (_connectionStatus == 'ConnectivityResult.wifi' ||
+          _connectionStatus == 'ConnectivityResult.mobile') {
+        final response =
+            await http.get(url, headers: {"Accept": "application/json"});
 
-    if (response.statusCode == 200) {
-      return Prayer.fromJSON(json.decode(response.body));
+        if (response.statusCode == 200) {
+          return Prayer.fromJSON(json.decode(response.body));
+        } else {
+          throw Exception("Can't get data ! Please retry after.");
+        }
+      } else {
+        throw Exception("No Internet connection ! Please, check your network.");
+      }
     } else {
-      throw Exception("Can't get data.");
+      return null;
     }
   }
 
-  _loadCity() async {
+  Future<void> _loadCity() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       city = prefs.getString('city') ?? "none";
@@ -176,6 +202,39 @@ class _MyHomePageState extends State<MyHomePage> {
         context,
         MaterialPageRoute(builder: (context) => new City(city: this.city)),
       );
+    }
+  }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initConnectivity() async {
+    ConnectivityResult result;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      print(e.toString());
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    switch (result) {
+      case ConnectivityResult.wifi:
+      case ConnectivityResult.mobile:
+      case ConnectivityResult.none:
+        setState(() => _connectionStatus = result.toString());
+        break;
+      default:
+        setState(() => _connectionStatus = 'Failed to get connectivity.');
+        break;
     }
   }
 }

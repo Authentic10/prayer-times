@@ -8,13 +8,10 @@ class City extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
 
   final String city;
+  final String connectionStatus;
 
-  City({Key key, @required this.city}) : super(key: key);
-
-  /*@override
-  void initState() {
-    _loadCity();
-  }*/
+  City({Key key, @required this.city, @required this.connectionStatus})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +23,7 @@ class City extends StatelessWidget {
   }
 
   Widget _changeCity(BuildContext context, String city) {
-    
-    if(city!='none') myController.text = city;
+    if (city != 'none') myController.text = city;
 
     return new Form(
       key: _formKey,
@@ -72,15 +68,21 @@ class City extends StatelessWidget {
   void _checkCity(BuildContext context, String c) async {
     final String url = 'https://api.pray.zone/v2/times/today.json?city=' + c;
 
-    final response =
-        await http.get(url, headers: {"Accept": "application/json"});
+    if (connectionStatus == 'ConnectivityResult.wifi' ||
+        connectionStatus == 'ConnectivityResult.mobile') {
+      final response =
+          await http.get(url, headers: {"Accept": "application/json"});
 
-    if (response.statusCode == 200) {
-      showToast("City changed !", context, gravity: Toast.BOTTOM);
-      await _updateCity(c);
-      Navigator.pop(context, c);
+      if (response.statusCode == 200) {
+        showToast("City changed !", context, gravity: Toast.BOTTOM);
+        await _updateCity(c);
+        Navigator.pop(context, c);
+      } else {
+        showToast("City not found, sorry !", context, gravity: Toast.BOTTOM);
+      }
     } else {
-      showToast("City not found, sorry !", context, gravity: Toast.BOTTOM);
+      showToast("No Internet connection ! Please, check your network.", context,
+          duration: 4, gravity: Toast.BOTTOM);
     }
   }
 
