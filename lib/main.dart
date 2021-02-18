@@ -200,7 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (city == 'none') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => new City(city: this.city)),
+        MaterialPageRoute(builder: (context) => new City(city: this.city, connectionStatus: _connectionStatus,)),
       );
     }
   }
